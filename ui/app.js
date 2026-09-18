@@ -381,6 +381,28 @@
       if (ix.running && !pollStatus._lastRefresh || Date.now() - (pollStatus._lastRefresh || 0) > 15000) { pollStatus._lastRefresh = Date.now(); loadSources(); }
     } catch (e) { $("#statusText").textContent = "⚠ " + e.message; }
   }
+  // ------------------------------------------------------------ actualizaciones
+  async function checkUpdate(manual = false) {
+    try {
+      const u = await api(`/api/update?check=true`);
+      let btn = $("#btnUpdate");
+      if (u.available) {
+        if (!btn) { btn = document.createElement("button"); btn.id = "btnUpdate"; btn.className = "mini primary"; $("#statusbar").appendChild(btn); }
+        btn.textContent = `⬆ ${t("update_available")} v${u.latest}`;
+        btn.onclick = async () => {
+          if (!confirm(`${t("update_available")} v${u.latest}\n\n${(u.notes || "").slice(0, 400)}\n\n${t("update_confirm")}`)) return;
+          await post("/api/update/apply");
+          const tick = setInterval(async () => {
+            try {
+              const s = await api("/api/update");
+              btn.textContent = s.launched ? t("update_installing") : `${t("update_downloading")} ${Math.round((s.progress || 0) * 100)}%`;
+              if (s.error) { btn.textContent = "⚠ " + s.error; clearInterval(tick); }
+            } catch (e) { btn.textContent = t("update_installing"); clearInterval(tick); }
+          }, 1000);
+        };
+      } else if (manual) toast(u.error ? t("error") + ": " + u.error : t("update_none"), 3000);
+    } catch (e) { if (manual) toast(e.message); }
+  }
   $("#btnLang").onclick = () => { state.lang = state.lang === "es" ? "en" : "es"; localStorage.setItem("loclip.lang", state.lang); applyI18n(); };
   $("#btnSettings").onclick = async () => {
     const s = await api("/api/system");
@@ -397,8 +419,9 @@
       <label><input type="checkbox" id="sTranscribe" ${st.transcribe ? "checked" : ""}> ${t("settings_transcribe")}</label>
       <label>${t("settings_fps")}</label><select id="sFps">${[0.5, 1, 2].map((f) => `<option value="${f}" ${Number(st.sample_fps) === f ? "selected" : ""}>${f}</option>`).join("")}</select>
       <p class="small muted">${t("settings_note_models")}</p>
-      <div class="btns"><button id="sCancel">${t("cancel")}</button><button class="primary" id="sSave">${t("save")}</button></div>`);
+      <div class="btns"><span class="small muted" style="margin-right:auto">LoClip v${esc(s.version)}</span><button id="sUpdate">${t("update_check")}</button><button id="sCancel">${t("cancel")}</button><button class="primary" id="sSave">${t("save")}</button></div>`);
     $("#sCancel").onclick = closeModal;
+    $("#sUpdate").onclick = () => { closeModal(); checkUpdate(true); };
     $("#sSave").onclick = async () => {
       const r = await put("/api/settings", { visual_model: $("#sVisual").value, speech_model: $("#sSpeech").value, transcribe: $("#sTranscribe").checked, sample_fps: Number($("#sFps").value) });
       toast(r.restart_required ? t("restart_required") : t("saved"), 4000); closeModal();
@@ -410,5 +433,6 @@
   $("#empty").textContent = t("welcome");
   loadSources(); loadCollections(); loadConcepts();
   pollStatus(); setInterval(pollStatus, 2500);
+  setTimeout(() => checkUpdate(false), 8000);
   $("#q").focus();
 })();

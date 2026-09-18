@@ -8,3 +8,5 @@ venv/
 Thumbs.db
 node_modules/
 panel/engine.json
+build/
+dist/

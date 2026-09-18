@@ -1,5 +1,6 @@
-# LoClip — instalador para Windows
-# Uso: clic derecho > "Ejecutar con PowerShell", o en una terminal:  powershell -ExecutionPolicy Bypass -File installers\install.ps1
+﻿# LoClip — instalador para Windows
+# SOLO PARA DESARROLLO. Los editores deben usar LoClip-Setup.exe (pestaña Releases en GitHub).
+# Uso: doble clic en installers\install-dev.cmd (mantiene la ventana abierta y guarda un log).
 # Qué hace: instala Python (si falta), crea un entorno aislado, instala el motor (con CUDA si hay GPU NVIDIA),
 # descarga ffmpeg y los modelos, registra el panel en Premiere y crea el acceso directo "Iniciar LoClip".
 # No modifica nada en tus carpetas de footage.

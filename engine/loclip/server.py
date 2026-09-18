@@ -25,7 +25,7 @@ from .search import Searcher, VectorIndex
 from .transcribe import SpeechModel
 
 log = logging.getLogger("loclip")
-VERSION = "0.1.0"
+from . import __version__ as VERSION
 
 UI_DIR = Path(__file__).resolve().parent.parent.parent / "ui"
 
@@ -125,6 +125,22 @@ def shutdown():
         os._exit(0)
     threading.Thread(target=_die, daemon=True).start()
     return {"ok": True}
+
+
+@app.get("/api/update")
+def update_status(check: bool = False):
+    from . import updater
+    return updater.check(VERSION) if check else updater.status(VERSION)
+
+
+@app.post("/api/update/apply")
+def update_apply():
+    from . import updater
+
+    def before_launch():
+        if S.ready:
+            S.indexer.pause(True)
+    return updater.apply(before_launch)
 
 
 @app.get("/api/browse")

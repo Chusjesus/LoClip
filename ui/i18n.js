@@ -31,6 +31,8 @@ window.I18N = {
     file_not_available: "El archivo no está disponible ahora (fuente desconectada).",
     errors_title: "Archivos con error", speaker: "Hablante", tc: "Tiempo",
     data_dir: "Carpeta de datos de LoClip", delete_collection_confirm: "¿Eliminar esta colección?",
+    update_available: "Actualizar a", update_confirm: "Se descargará e instalará la nueva versión. El panel se reconectará solo al terminar (1–3 min). ¿Continuar?",
+    update_downloading: "Descargando actualización", update_installing: "Instalando… el panel se reconectará en un momento", update_check: "Buscar actualizaciones", update_none: "Ya tienes la última versión",
   },
   en: {
     search: "Search", placeholder: "Search by what you see, what is said or the file name… (#concept)",
@@ -63,5 +65,7 @@ window.I18N = {
     file_not_available: "The file is not available right now (source disconnected).",
     errors_title: "Files with errors", speaker: "Speaker", tc: "Time",
     data_dir: "LoClip data folder", delete_collection_confirm: "Delete this collection?",
+    update_available: "Update to", update_confirm: "The new version will be downloaded and installed. The panel reconnects by itself when done (1–3 min). Continue?",
+    update_downloading: "Downloading update", update_installing: "Installing… the panel will reconnect shortly", update_check: "Check for updates", update_none: "You already have the latest version",
   },
 };

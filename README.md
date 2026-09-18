@@ -24,21 +24,21 @@ Escribe lo que buscas ("persona riendo en la cocina", "producto en primer plano"
 
 ## Instalación
 
-Requisitos: Windows 10/11 o macOS 13+, Premiere Pro 2022 o más nuevo, ~6 GB libres (modelos + PyTorch), internet solo para instalar.
+**Windows (editores): un solo archivo.** Descarga `LoClip-Setup-x.y.z.exe` desde la pestaña **Releases** de este repositorio y ejecútalo. No pide administrador ni instala nada del sistema: todo va a tu carpeta de usuario. Al final abre una ventana negra que descarga los componentes de IA (PyTorch con CUDA si tienes GPU NVIDIA, y los modelos); déjala terminar. Luego abre Premiere → *Ventana > Extensiones > LoClip*.
 
-**Windows**
+Requisitos: Windows 10/11 de 64 bits, Premiere Pro 2022 o más nuevo, ~6 GB libres. Internet solo para instalar y actualizar.
 
-1. Descarga o clona este repositorio (GitHub Desktop: *Code > Open with GitHub Desktop*).
-2. Clic derecho en `installers\install.ps1` → **Ejecutar con PowerShell** (o en una terminal: `powershell -ExecutionPolicy Bypass -File installers\install.ps1`).
-3. Abre Premiere → *Ventana > Extensiones > LoClip*.
+**Actualizaciones:** el panel avisa cuando hay una versión nueva (botón *Actualizar a vX* en la barra inferior, o *Ajustes > Buscar actualizaciones*). Con un clic descarga e instala; no hay que volver a bajar nada a mano.
 
-**macOS**
+**macOS:** por ahora se instala desde el código: `bash installers/install.sh` (el instalador de un clic para Mac está en el roadmap).
 
-1. Descarga o clona el repositorio.
-2. En Terminal: `bash installers/install.sh`
-3. Abre Premiere → *Window > Extensions > LoClip*.
+**Desarrollo (Windows, desde el código):** doble clic en `installers\install-dev.cmd`. Deja la ventana abierta y guarda un registro en `%LOCALAPPDATA%\LoClip\install-dev.log`.
 
-La primera vez el instalador descarga PyTorch y los modelos (puede tardar 10–20 min). Después, todo es offline.
+### Cómo se genera el instalador
+
+No se construye en tu máquina: `.github/workflows/build-windows.yml` lo arma en un servidor de GitHub cada vez que se sube código a `main` (queda en *Actions > Artifacts*) y lo publica en *Releases* cuando se crea una etiqueta `vX.Y.Z` o se ejecuta el workflow con "Publicar en Releases". El instalador incluye Python, PyTorch (CPU), ffmpeg, el motor, la interfaz y el panel; al instalar, `bootstrap.py` cambia a PyTorch CUDA si hay GPU NVIDIA, registra el panel y descarga los modelos.
+
+> Para que las actualizaciones automáticas funcionen, el repositorio debe ser **público** (el motor consulta la última Release sin credenciales).
 
 ## Uso rápido
 

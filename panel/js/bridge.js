@@ -58,10 +58,26 @@
     };
     x.send();
   }
+  var shown = false, misses = 0;
   function show() {
-    if (!ui.src) ui.src = BASE + "/?host=ppro&lang=" + lang;
+    if (!ui.src || !shown) ui.src = BASE + "/?host=ppro&lang=" + lang + "&_=" + Date.now();
     ui.classList.remove("hidden");
     wait.classList.add("hidden");
+    shown = true; misses = 0;
+    setTimeout(watch, 5000);
+  }
+  // Vigila el motor: si se cae (p. ej. durante una actualización), vuelve a la pantalla de espera y reconecta solo.
+  function watch() {
+    if (!shown) return;
+    var x = new XMLHttpRequest();
+    x.open("GET", BASE + "/api/health", true); x.timeout = 3000;
+    x.onload = function () { misses = 0; setTimeout(watch, 5000); };
+    x.onerror = x.ontimeout = function () {
+      misses++;
+      if (misses >= 3) { shown = false; started = false; polls = 0; ui.classList.add("hidden"); wait.classList.remove("hidden"); msg.textContent = T.connecting; setTimeout(poll, 4000); }
+      else setTimeout(watch, 3000);
+    };
+    x.send();
   }
   document.getElementById("btnStart").onclick = function () { started = false; tryStartEngine(); };
   document.getElementById("btnRetry").onclick = function () { polls = 0; poll(); };

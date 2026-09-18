@@ -10,6 +10,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
@@ -48,12 +49,22 @@ def scan(root: str) -> Iterator[tuple[str, int, float]]:
             yield p, st.st_size, st.st_mtime
 
 
+def _bundled(name: str) -> str | None:
+    """ffmpeg incluido en la instalación (carpeta `ffmpeg/` junto a `engine/`)."""
+    exe = name + (".exe" if os.name == "nt" else "")
+    for base in (Path(__file__).resolve().parents[2], Path(sys.executable).resolve().parent.parent):
+        p = base / "ffmpeg" / exe
+        if p.exists():
+            return str(p)
+    return None
+
+
 def _ffprobe_bin() -> str:
-    return os.environ.get("LOCLIP_FFPROBE") or shutil.which("ffprobe") or "ffprobe"
+    return os.environ.get("LOCLIP_FFPROBE") or _bundled("ffprobe") or shutil.which("ffprobe") or "ffprobe"
 
 
 def _ffmpeg_bin() -> str:
-    return os.environ.get("LOCLIP_FFMPEG") or shutil.which("ffmpeg") or "ffmpeg"
+    return os.environ.get("LOCLIP_FFMPEG") or _bundled("ffmpeg") or shutil.which("ffmpeg") or "ffmpeg"
 
 
 @dataclass

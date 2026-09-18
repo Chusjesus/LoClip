@@ -16,6 +16,13 @@ def _add_nvidia_dlls() -> None:
     except Exception:
         roots = []
     for root in roots:
+        tl = _os.path.join(root, "torch", "lib")  # las ruedas CUDA de torch traen cuBLAS/cuDNN aquí
+        if _os.path.isdir(tl):
+            try:
+                _os.add_dll_directory(tl)
+            except Exception:
+                pass
+            _os.environ["PATH"] = tl + _os.pathsep + _os.environ.get("PATH", "")
         nv = _os.path.join(root, "nvidia")
         if not _os.path.isdir(nv):
             continue

@@ -1,0 +1,102 @@
+# Construye LoClip-Setup-x.y.z.exe en un servidor de GitHub (Windows) y lo publica.
+# - En cada push a main: el .exe queda en la pestaña Actions > (ejecución) > Artifacts.
+# - Con una etiqueta v* (o "Run workflow" con "release" = true): se publica en Releases.
+name: Build Windows installer
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Publicar en Releases"
+        type: boolean
+        default: false
+
+env:
+  PYTHON_VERSION: "3.12.7"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version
+        shell: pwsh
+        run: |
+          $v = (Select-String -Path engine\loclip\__init__.py -Pattern '__version__ = "([^"]+)"').Matches.Groups[1].Value
+          if ("${{ github.ref }}" -like "refs/tags/v*") { $v = "${{ github.ref_name }}".TrimStart("v") }
+          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Version: $v"
+
+      - name: Python embebido
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force build | Out-Null
+          $url = "https://www.python.org/ftp/python/${{ env.PYTHON_VERSION }}/python-${{ env.PYTHON_VERSION }}-embed-amd64.zip"
+          Invoke-WebRequest $url -OutFile py.zip
+          Expand-Archive py.zip -DestinationPath build\python
+          # Habilitar site-packages y la carpeta del motor
+          $pth = Get-ChildItem build\python\python*._pth | Select-Object -First 1
+          @("python312.zip", ".", "..\engine", "Lib\site-packages", "import site") | Set-Content $pth.FullName -Encoding ASCII
+          Invoke-WebRequest https://bootstrap.pypa.io/get-pip.py -OutFile get-pip.py
+          build\python\python.exe get-pip.py --no-warn-script-location
+          build\python\python.exe -m pip --version
+
+      - name: Dependencias (PyTorch CPU + motor)
+        shell: pwsh
+        run: |
+          build\python\python.exe -m pip install --no-warn-script-location torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          build\python\python.exe -m pip install --no-warn-script-location -r engine\requirements.txt
+          # Limpieza para reducir tamaño
+          Get-ChildItem build\python\Lib\site-packages -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+          Get-ChildItem build\python\Lib\site-packages -Recurse -Directory -Filter "tests" | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+
+      - name: ffmpeg
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip -OutFile ff.zip
+          Expand-Archive ff.zip -DestinationPath fftmp
+          New-Item -ItemType Directory -Force build\ffmpeg | Out-Null
+          Get-ChildItem -Recurse fftmp -Include ffmpeg.exe, ffprobe.exe, LICENSE* | Copy-Item -Destination build\ffmpeg -Force
+
+      - name: Copiar motor, interfaz y panel
+        shell: pwsh
+        run: |
+          Copy-Item -Recurse engine build\engine
+          Copy-Item -Recurse ui build\ui
+          Copy-Item -Recurse panel build\panel
+          Copy-Item installers\windows\bootstrap.py build\bootstrap.py
+          Copy-Item "installers\windows\Iniciar LoClip.cmd" "build\Iniciar LoClip.cmd"
+          Copy-Item README.md, LICENSE build\
+          Get-ChildItem build\engine -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
+          # Verificación rápida: el motor importa con el Python embebido
+          Push-Location build\engine
+          ..\python\python.exe -c "import loclip.server, torch; print('ok', torch.__version__)"
+          Pop-Location
+
+      - name: Compilar instalador (Inno Setup)
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DAppVersion=${{ env.VERSION }} /DBuildDir=..\..\build installers\windows\LoClip.iss
+          Get-ChildItem dist
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: LoClip-Setup-${{ env.VERSION }}
+          path: dist/*.exe
+          retention-days: 30
+
+      - name: Publicar Release
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.release == true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: LoClip ${{ env.VERSION }}
+          files: dist/*.exe
+          generate_release_notes: true
