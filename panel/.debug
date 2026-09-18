@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionList>
+  <Extension Id="com.loclip.panel">
+    <HostList>
+      <Host Name="PPRO" Port="47830"/>
+      <Host Name="AEFT" Port="47831"/>
+    </HostList>
+  </Extension>
+</ExtensionList>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ExtensionBundleId="com.loclip.panel" ExtensionBundleName="LoClip" ExtensionBundleVersion="0.1.0" Version="7.0">
+  <ExtensionList>
+    <Extension Id="com.loclip.panel" Version="0.1.0"/>
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <!-- Premiere Pro: cualquier versión desde 2022 (v22) en adelante, en cualquier idioma -->
+      <Host Name="PPRO" Version="[22.0,99.9]"/>
+      <!-- After Effects (v2): el panel carga; la inserción en composiciones llega en una versión posterior -->
+      <Host Name="AEFT" Version="[22.0,99.9]"/>
+    </HostList>
+    <LocaleList>
+      <Locale Code="All"/>
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="11.0"/>
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.loclip.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+          <ScriptPath>./jsx/host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+            <Parameter>--allow-file-access-from-files</Parameter>
+            <Parameter>--allow-file-access</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>LoClip</Menu>
+          <Geometry>
+            <Size><Height>600</Height><Width>900</Width></Size>
+            <MinSize><Height>300</Height><Width>360</Width></MinSize>
+          </Geometry>
+          <Icons>
+            <Icon Type="Normal">./icons/icon.png</Icon>
+          </Icons>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>LoClip</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1e1e1e; color: #ddd; font: 13px -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+  iframe { border: 0; width: 100%; height: 100%; display: block; }
+  #wait { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; text-align: center; }
+  #wait.hidden { display: none; }
+  button { background: #3c6be0; color: #fff; border: 0; border-radius: 6px; padding: 7px 14px; cursor: pointer; font: inherit; }
+  .muted { color: #999; font-size: 12px; max-width: 420px; }
+  code { background: #2e2e2e; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="wait">
+  <div style="font-size:18px"><b style="color:#6c9cff">Lo</b>Clip</div>
+  <div id="msg">Conectando con el motor de LoClip…</div>
+  <div class="muted" id="hint"></div>
+  <div><button id="btnStart">Iniciar motor</button> <button id="btnRetry" style="background:#444">Reintentar</button></div>
+</div>
+<iframe id="ui" class="hidden" allow="clipboard-read; clipboard-write"></iframe>
+<script src="js/cep.js"></script>
+<script src="js/bridge.js"></script>
+</body>
+</html>
